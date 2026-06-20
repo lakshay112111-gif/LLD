@@ -1,90 +1,101 @@
-
 using System;
 using System.Collections.Generic;
 
-// Observer, Pattren example, Youtube channel & Subscriber.
+// Observer Pattern Example - YouTube Channel & Subscribers
 
-public interface IChannel {
-    void subscribe(ISubscriber subscriber);
-    void unsubscribe(ISubscriber subscriber);
-    void notifySubscriber();
+public interface IChannel
+{
+    void Subscribe(ISubscriber subscriber);
+    void Unsubscribe(ISubscriber subscriber);
+    void NotifySubscribers();
 }
 
-public interface ISubscriber {
-    void Update();
+public interface ISubscriber
+{
+    void Update(string videoName);
 }
 
-// Concrete classes.
+// Subject
+public class Channel : IChannel
+{
+    private string _channelName;
+    private string _latestVideo;
 
-public class Channel : IChannel {
-    string channelName;
-    string  latestVideo;
-    List<ISubscriber> subscribers = new List<ISubscriber> ();
-    
-    public Channel(string name){
-        channelName = name;
+    private List<ISubscriber> _subscribers =
+        new List<ISubscriber>();
+
+    public Channel(string channelName)
+    {
+        _channelName = channelName;
     }
-    // add subscriber.
-    public void subscribe(ISubscriber subscriber){
-        if(!subscribers.Contains(subscriber)){
-            subscribers.Add(subscriber);
+
+    public void Subscribe(ISubscriber subscriber)
+    {
+        if (!_subscribers.Contains(subscriber))
+        {
+            _subscribers.Add(subscriber);
         }
     }
-    
-    // remove subscriber.
-    public void unsubscribe(ISubscriber subscriber) {
-        subscribers.Remove(subscriber);
+
+    public void Unsubscribe(ISubscriber subscriber)
+    {
+        _subscribers.Remove(subscriber);
     }
-    
-    public void notifySubscriber() {
-        foreach(var subscriber in subscribers){
-            subscriber.Update();
+
+    public void NotifySubscribers()
+    {
+        foreach (var subscriber in _subscribers)
+        {
+            subscriber.Update(_latestVideo);
         }
     }
-    
-    public void uploadVideo(string name){
-        latestVideo = name;
-        notifySubscriber();
-    }
-    
-    public string getVideoName(){
-        return latestVideo;
+
+    public void UploadVideo(string videoName)
+    {
+        _latestVideo = videoName;
+
+        Console.WriteLine(
+            $"\n{_channelName} uploaded: {_latestVideo}");
+
+        NotifySubscribers();
     }
 }
 
-public class Subscriber : ISubscriber {
-    public string _name;
-    Channel _channel;
-    
-    public Subscriber(Channel channel, string name){
+// Observer
+public class Subscriber : ISubscriber
+{
+    private string _name;
+
+    public Subscriber(string name)
+    {
         _name = name;
-        _channel = channel;
     }
-    
-    // This is called, by channel to update.
-    public void Update() {
-        string videoName = _channel.getVideoName();
-        Console.WriteLine($"Hi, {_name}, this is {videoName}");
+
+    public void Update(string videoName)
+    {
+        Console.WriteLine(
+            $"Hi {_name}, check out the new video: {videoName}");
     }
 }
 
-public class Client {
-    
-    public static void Main(){
-        
-        Channel channel = new Channel("Learn Coding with Lakshay!");
-        
-        Subscriber s1 = new Subscriber(channel, "Ram");
-        Subscriber s2 = new Subscriber(channel, "Shyam");
-        
-        channel.subscribe(s1);
-        channel.subscribe(s2);
-        
-        channel.uploadVideo("Observer Pattren");
-        
-        channel.unsubscribe(s1);
-        
-        channel.uploadVideo("Strategy Pattren");
-    
+// Client
+public class Program
+{
+    public static void Main()
+    {
+        Channel channel =
+            new Channel("Learn Coding with Lakshay");
+
+        ISubscriber s1 = new Subscriber("Ram");
+        ISubscriber s2 = new Subscriber("Shyam");
+
+        channel.Subscribe(s1);
+        channel.Subscribe(s2);
+
+        channel.UploadVideo("Observer Pattern");
+
+        channel.Unsubscribe(s1);
+
+        channel.UploadVideo("Strategy Pattern");
     }
 }
